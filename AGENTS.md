@@ -10,7 +10,27 @@
 | Supabase | ✅ 已认证 | `liyubei` (2 projects) |
 | Vercel | ✅ 已认证 | `liyubei1212-8110` |
 
-Token 存储在 `.env` 中（已加入 `.gitignore`，不会提交）。
+## 🔐 安全设计
+
+**Token 不再明文存储于任何文件中。**
+
+- Supabase 和 Vercel 的 Token 存储在 **macOS Keychain** 中
+- `.env` 中已移除所有 Token，仅保留应用配置
+- Git pre-commit hook 已启用，**提交前自动检测敏感信息**，阻止误提交
+
+### Token 存储位置
+
+| 服务 | Keychain Service Name |
+|------|----------------------|
+| Supabase | `devops-supabase-token` |
+| Vercel | `devops-vercel-token` |
+
+### 手动查看 Token（如需）
+
+```bash
+security find-generic-password -s "devops-supabase-token" -w
+security find-generic-password -s "devops-vercel-token" -w
+```
 
 ## 一键初始化新项目
 
@@ -51,9 +71,10 @@ npm run deploy
 ## 环境变量
 
 ```bash
-# 已配置在 .env 中
-SUPABASE_ACCESS_TOKEN=sbp_xxx
-VERCEL_TOKEN=vcp_xxx
-```
+# 应用配置（可提交到 Git）
+LARK_APP_ID=cli_xxx
+LARK_APP_SECRET=xxx
+PORT=3000
 
-如需在新项目中复用，复制 `.env` 中的 token 到新项目即可。
+# Token 已从 .env 移除，改为 Keychain 存储
+```

@@ -15,22 +15,24 @@ const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
-// 加载 .env
-function loadEnv() {
-  const envPath = path.join(process.cwd(), ".env");
-  if (!fs.existsSync(envPath)) return;
-  const content = fs.readFileSync(envPath, "utf-8");
-  for (const line of content.split("\n")) {
-    const match = line.match(/^([A-Z_]+)=(.*)$/);
-    if (match && !process.env[match[1]]) {
-      process.env[match[1]] = match[2];
-    }
+// 优先从 macOS Keychain 读取 Token，其次从环境变量
+function getTokenFromKeychain(service) {
+  try {
+    return execSync(`security find-generic-password -s "${service}" -w`, {
+      encoding: "utf-8",
+      stdio: "pipe",
+    }).trim();
+  } catch {
+    return null;
   }
 }
-loadEnv();
 
-const SUPABASE_TOKEN = process.env.SUPABASE_ACCESS_TOKEN;
-const VERCEL_TOKEN = process.env.VERCEL_TOKEN;
+const SUPABASE_TOKEN =
+  getTokenFromKeychain("devops-supabase-token") ||
+  process.env.SUPABASE_ACCESS_TOKEN;
+const VERCEL_TOKEN =
+  getTokenFromKeychain("devops-vercel-token") ||
+  process.env.VERCEL_TOKEN;
 
 function run(cmd, opts = {}) {
   console.log(`\n▶ ${cmd}`);
@@ -53,6 +55,22 @@ function ask(question) {
 }
 
 async function main() {
+  if (process.argv.includes("--help") || process.argv.includes("-h")) {
+    console.log(`
+Usage: node scripts/init-devops.js [project-name]
+
+自动完成 GitHub 建仓 → Supabase 建库 → Vercel 部署。
+
+Options:
+  project-name  项目名（默认当前目录名）
+  --help, -h    显示帮助
+
+环境变量（读取 .env）：
+  SUPABASE_ACCESS_TOKEN  Supabase 访问令牌
+  VERCEL_TOKEN           Vercel 访问令牌
+`);
+    process.exit(0);
+  }
   const projectName = process.argv[2] || path.basename(process.cwd());
   console.log(`\n🚀 DevOps 自动化初始化: ${projectName}\n`);
 
