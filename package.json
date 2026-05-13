@@ -1,0 +1,30 @@
+{
+  "name": "lark-claude-bot",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "start": "tsx src/index.ts",
+    "tunnel": "npx ngrok http 3000",
+    "setup": "node scripts/init-devops.js",
+    "repo:create": "gh repo create $(basename $(pwd)) --public --source=. --push",
+    "deploy": "npx vercel --yes --token $(grep VERCEL_TOKEN .env | cut -d= -f2)"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.95.2",
+    "@larksuiteoapi/node-sdk": "^1.63.1",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.7.0",
+    "ngrok": "^5.0.0-beta.2",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
+  }
+}
